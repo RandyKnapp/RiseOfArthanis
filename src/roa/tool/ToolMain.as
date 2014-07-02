@@ -7,6 +7,7 @@ package roa.tool
 import flash.display.Sprite;
 import flash.display.StageAlign;
 import flash.display.StageScaleMode;
+import roa.tool.ui.BlockViewer;
 import roa.tool.ui.CharColorPicker;
 import roa.tool.ui.CharInfoControls;
 import roa.tool.ui.InfoPanel;
@@ -22,6 +23,7 @@ public class ToolMain extends Sprite
     // Controls
     private var m_charInfoControls:CharInfoControls;
     private var m_infoPanel:InfoPanel;
+    private var m_blockEditor:BlockViewer;
 
     //============================================================================================
     public function ToolMain () 
@@ -37,12 +39,22 @@ public class ToolMain extends Sprite
         m_infoPanel = new InfoPanel();
         m_infoPanel.x = rightColumn;
         m_infoPanel.y = 200;
-        addChild(m_infoPanel);
         
         m_charInfoControls = new CharInfoControls();
         m_charInfoControls.x = rightColumn;
         m_charInfoControls.y = 20;
+        
+        m_blockEditor = new BlockViewer(960, 540, m_charInfoControls);
+        m_blockEditor.x = 215;
+        m_blockEditor.y = 20;
+        
+        // Order matters
+        addChild(m_blockEditor);
+        addChild(m_infoPanel);
         addChild(m_charInfoControls);
+
+        // Setup Signals
+        m_blockEditor.onHoverChanged.add(m_infoPanel.setInfo);
     }
 
 }

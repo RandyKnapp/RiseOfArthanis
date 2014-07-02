@@ -39,6 +39,8 @@ public class CharInfo extends Sprite
     public function set bg (value:uint):void { m_data.bg = value; updateBg(); }
     public function get fg ():uint { return m_data.fg; }
     public function set fg (value:uint):void { m_data.fg = value; updateChar(); }
+    public function get data ():CharInfoData { return m_data; }
+    public function set data (value:CharInfoData):void { char = value.char; fg = value.fg; bg = value.bg; updateBg(); updateChar(); }
 
     //=============================================================================================
     public function CharInfo (data:* = null, fg:uint = 0, bg:uint = 0) 
@@ -46,7 +48,7 @@ public class CharInfo extends Sprite
         if (data != null)
         {
             if (data is CharInfoData)
-                m_data = data;
+                m_data = data.clone();
             else if (data is uint)
                 m_data = new CharInfoData(data as uint, fg, bg);
         }

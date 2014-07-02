@@ -30,6 +30,12 @@ public class CharInfoData
         }
     }
     
+    //=============================================================================================
+    public function clone ():CharInfoData
+    {
+        return new CharInfoData(char, fg, bg);
+    }
+    
 }
 
 }

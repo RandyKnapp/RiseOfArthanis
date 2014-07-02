@@ -8,6 +8,7 @@ package roa.tool.ui
     import org.osflash.signals.events.GenericEvent;
     import org.osflash.signals.Signal;
     import roa.display.char.CharInfo;
+    import roa.display.data.CharInfoData;
 	
 // CharInfoPicker
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -21,6 +22,10 @@ public class CharInfoPicker extends Sprite
     private var m_charPicker:CharPicker;
     private var m_fgColorPicker:CharColorPicker;
     private var m_bgColorPicker:CharColorPicker;
+    
+    // Properties
+    public function get data ():CharInfoData { return m_data.data; }
+    public function set data (value:CharInfoData):void { setData(value); }
     
     // Signals
     public var onCharInfoChanged:Signal = new Signal();
@@ -84,6 +89,19 @@ public class CharInfoPicker extends Sprite
         m_fgColorPicker.showSelector(false)
         m_bgColorPicker.showSelector(false);
     }
+    
+    //=============================================================================================
+    private function setData (data:CharInfoData):void
+    {
+        if (data == null)
+            return;
+            
+        m_data.data = data;
+        
+        m_charPicker.char = data.char;
+        m_fgColorPicker.color = data.fg;
+        m_bgColorPicker.color = data.bg;
+    }
         
     //=============================================================================================
     private function onCharChanged (picker:*, newChar:uint):void 
@@ -128,7 +146,7 @@ public class CharInfoPicker extends Sprite
             
         onSelectorOpened.dispatch(this);
     }
-
+    
 }
 
 }

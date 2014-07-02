@@ -7,8 +7,12 @@ package roa.tool.ui
 import com.gskinner.geom.ColorMatrix;
 import flash.display.Bitmap;
 import flash.display.Sprite;
+import flash.events.Event;
+import flash.events.KeyboardEvent;
 import flash.filters.ColorMatrixFilter;
 import flash.filters.GlowFilter;
+import org.osflash.signals.Signal;
+import roa.display.data.CharInfoData;
 	
 // CharInfoControls
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -35,6 +39,7 @@ public class CharInfoControls extends Sprite
     // Data
     private static var m_desatMatrix:ColorMatrix = null;
     private var m_mode:String = MODE_PENCIL;
+    private var m_modeKeys:Object = { eraser : false, pipette : false };
     
     // Controls
     private var m_leftControl:CharInfoPicker;
@@ -47,7 +52,8 @@ public class CharInfoControls extends Sprite
     
     // Properties
     public function get mode ():String { return m_mode; }
-    public function set mode (value:String):void { m_mode = value; updateMode(); }
+    public function get leftData ():CharInfoData { return m_leftControl.data; }
+    public function get rightData ():CharInfoData { return m_rightControl.data; }
 
     //============================================================================================
     public function CharInfoControls () 
@@ -74,11 +80,11 @@ public class CharInfoControls extends Sprite
         addChild(right);
         
         // Create CharInfoPickers
-        m_leftControl = new CharInfoPicker(65, 21, 0);
+        m_leftControl = new CharInfoPicker(65, 21, 14);
         m_leftControl.x = 0;
         m_leftControl.y = left.height + 8;
         
-        m_rightControl = new CharInfoPicker(66, 31, 0);
+        m_rightControl = new CharInfoPicker(66, 31, 14);
         m_rightControl.x = 34;
         m_rightControl.y = m_leftControl.y;
         
@@ -103,6 +109,34 @@ public class CharInfoControls extends Sprite
         // Setup signals
         m_leftControl.onSelectorOpened.add(onSelectorOpened);
         m_rightControl.onSelectorOpened.add(onSelectorOpened);
+        
+        // Events
+        addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+    }
+    
+    //=============================================================================================
+    private function onAddedToStage (e:Event):void 
+    {
+        removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+        stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDownUp);
+        stage.addEventListener(KeyboardEvent.KEY_UP, onKeyDownUp);
+    }
+    
+    //=============================================================================================
+    private function onKeyDownUp (e:KeyboardEvent):void 
+    {
+        m_modeKeys.eraser = e.shiftKey;
+        m_modeKeys.pipette = e.altKey;
+        updateMode();
+    }
+    
+    //=============================================================================================
+    public function pipetteAction (button:String, data:CharInfoData):void
+    {
+        if (button == "left")
+            m_leftControl.data = data.clone()
+        else if (button == "right")
+            m_rightControl.data = data.clone()
     }
     
     //=============================================================================================
@@ -117,6 +151,13 @@ public class CharInfoControls extends Sprite
     //============================================================================================
     public function updateMode ():void
     {
+        if (m_modeKeys.eraser)
+            m_mode = MODE_ERASER;
+        else if (m_modeKeys.pipette)
+            m_mode = MODE_PIPETTE;
+        else
+            m_mode = MODE_PENCIL;
+            
         for (var key:String in m_modeImages)
         {
             var bitmap:Bitmap = m_modeImages[key] as Bitmap;

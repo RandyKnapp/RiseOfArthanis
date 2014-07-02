@@ -3,45 +3,59 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 package roa.display.data 
 {
-import roa.display.char.CharBlock;
+import flash.display.Sprite;
 import roa.display.char.CharInfo;
 
 // CharBlockData
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-public class CharBlockData implements CharBlockDataBase
+public class CharBlockData extends Sprite
 {
-    private var m_id:String;
-    public var width:uint = 0;
-    public var height:uint = 0;
-    public var chars:Vector.<CharInfoData> = new Vector.<CharInfoData>();
-    
-    // Properties
-    public function get id ():String { return m_id; }
-    public function set id (value:String):void { m_id = value; }
-    public function get animated ():Boolean { return false; }
-    
+    // Data
+    public var chars:Object = new Object();
+
     //=============================================================================================
-    public function render (charBlock:CharBlock, frame:int):void
+    public function setChar (x:int, y:int, data:CharInfoData):void
     {
-        // Create all CharInfos
-        var w:uint = width;
-        var h:uint = height;
-        for (var i:int = 0; i < chars.length; ++i)
-        {
-            var charInfoData:CharInfoData = chars[i];
-            var dx:int = i % w;
-            var dy:int = i / w;
+        if (chars[x] == undefined)
+            chars[x] = new Object();
             
-            var charInfo:CharInfo = new CharInfo(charInfoData);
-            charInfo.x = dx * CharInfo.WIDTH;
-            charInfo.y = dy * CharInfo.HEIGHT;
-            charBlock.addChild(charInfo);
-        }
+        // Remove current object if it exists
+        if (chars[x][y] != undefined)
+            removeChild(chars[x][y]);
+        
+        // Make a new one and add it
+        var charInfo:CharInfo = new CharInfo(data);
+        charInfo.mouseEnabled = false;
+        charInfo.x = x * CharInfo.WIDTH;
+        charInfo.y = y * CharInfo.HEIGHT;
+        chars[x][y] = charInfo;
+        addChild(charInfo);
     }
     
     //=============================================================================================
-    public function onEnterFrame (frame:int):Boolean { return false; }
-    public function nextFrame (frame:int):int { return 0; }
+    public function getChar (x:int, y:int):CharInfoData
+    {
+        if (chars[x] == undefined)
+            return null;
+            
+        if (chars[x][y] == undefined)
+            return null;
+            
+        return (chars[x][y] as CharInfo).data;
+    }
+    
+    //=============================================================================================
+    public function eraseChar (x:int, y:int):void
+    {
+        if (chars[x] == undefined)
+            return;
+            
+        if (chars[x][y] == undefined)
+            return;
+            
+        removeChild(chars[x][y]);
+        delete chars[x][y];
+    }
 }
 
 }
