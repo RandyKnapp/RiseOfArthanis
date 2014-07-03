@@ -18,6 +18,9 @@ import roa.display.char.CharInfo;
 import roa.display.data.CharBlockData;
 import roa.display.data.CharInfoData;
 import roa.math.MathUtil;
+import roa.tool.command.Command;
+import roa.tool.command.CommandBuilder;
+import roa.tool.command.CommandManager;
 	
 // BlockViewer
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,6 +46,7 @@ public class BlockViewer extends Sprite
     private var m_rightDown:Boolean = false;
     private var m_controls:CharInfoControls;
     private var m_data:CharBlockData = new CharBlockData();
+    private var m_commandBuilder:CommandBuilder = new CommandBuilder(this);
     
     // Signals
     public var onHoverChanged:Signal = new Signal();
@@ -117,30 +121,69 @@ public class BlockViewer extends Sprite
         addEventListener(MouseEvent.RIGHT_MOUSE_DOWN, onRightMouseDown);
         addEventListener(MouseEvent.RIGHT_MOUSE_UP, onRightMouseUp);
         addEventListener(Event.MOUSE_LEAVE, onBothMouseUp);
+        
+        // Register for commands
+        CommandManager.addCommandListener(Command.DRAW_CHARS, onHandleCommand);
+        CommandManager.addCommandListener(Command.ERASE_CHARS, onHandleCommand);
     }
     
     //=============================================================================================
-    private function getDataAt (m_hoverX:int, m_hoverY:int):CharInfoData 
+    private function onHandleCommand (action:String, command:Command):void 
     {
-        return m_data.getChar(m_hoverX, m_hoverY);
+        if (command.target != this)
+            return;
+            
+        var commandData:* = action == Command.ACTION_UNDO ? command.undoData : command.redoData;
+        for each (var commandlet:* in commandData)
+        {
+            if (commandlet.type == "draw")
+            {
+                setDataAt(commandlet.x, commandlet.y, commandlet.data);
+            }
+            else if (commandlet.type == "erase")
+            {
+                eraseDataAt(commandlet.x, commandlet.y);
+            }
+        }
+    }
+    
+    //=============================================================================================
+    private function getDataAt (x:int, y:int):CharInfoData 
+    {
+        return m_data.getChar(x, y);
     }
         
     //=============================================================================================
-    private function eraseDataAt (m_hoverX:int, m_hoverY:int):void 
+    private function eraseDataAt (x:int, y:int):void 
     {
-        m_data.eraseChar(m_hoverX, m_hoverY);
+        var prevData:CharInfoData = getDataAt(x, y);
+        if (prevData != null)
+        {
+            m_data.eraseChar(x, y);
+            m_commandBuilder.addCommandlet("undo", "draw", { x : x, y : y, data : prevData } );
+            m_commandBuilder.addCommandlet("redo", "erase", { x : x, y : y } );
+        }
     }
     
     //=============================================================================================
-    private function setDataAt (m_hoverX:int, m_hoverY:int, data:CharInfoData):void 
+    private function setDataAt (x:int, y:int, data:CharInfoData):void 
     {
-        m_data.setChar(m_hoverX, m_hoverY, data);
+        var prevData:CharInfoData = getDataAt(x, y);
+        m_data.setChar(x, y, data);
+        
+        if (prevData != null)
+            m_commandBuilder.addCommandlet("undo", "draw", { x : x, y : y, data : prevData } );
+        else
+            m_commandBuilder.addCommandlet("undo", "erase", { x : x, y : y } );
+        m_commandBuilder.addCommandlet("redo", "draw", { x : x, y : y, data : data } );
     }
     
     //=============================================================================================
     private function onLeftMouseDown (e:MouseEvent):void 
     {
         m_leftDown = true;
+        if (m_controls.mode == CharInfoControls.MODE_PENCIL || m_controls.mode == CharInfoControls.MODE_ERASER)
+            m_commandBuilder.beginCommand(m_controls.mode == CharInfoControls.MODE_PENCIL ? Command.DRAW_CHARS : Command.ERASE_CHARS);
         onLeftMouseAction(e);
     }
     
@@ -148,12 +191,15 @@ public class BlockViewer extends Sprite
     private function onLeftMouseUp (e:MouseEvent):void 
     {
         m_leftDown = false;
+        m_commandBuilder.endCommand();
     }
     
     //=============================================================================================
     private function onRightMouseDown (e:MouseEvent):void 
     {
         m_rightDown = true;
+        if (m_controls.mode == CharInfoControls.MODE_PENCIL || m_controls.mode == CharInfoControls.MODE_ERASER)
+            m_commandBuilder.beginCommand(m_controls.mode == CharInfoControls.MODE_PENCIL ? Command.DRAW_CHARS : Command.ERASE_CHARS);
         onRightMouseAction(e);
     }
     
@@ -161,6 +207,7 @@ public class BlockViewer extends Sprite
     private function onRightMouseUp (e:MouseEvent):void 
     {
         m_rightDown = false;
+        m_commandBuilder.endCommand();
     }
     
     //=============================================================================================
@@ -168,6 +215,8 @@ public class BlockViewer extends Sprite
     {
         m_leftDown = false;
         m_rightDown = false;
+            if (m_controls.mode == CharInfoControls.MODE_PENCIL || m_controls.mode == CharInfoControls.MODE_ERASER)
+        m_commandBuilder.beginCommand(m_controls.mode == CharInfoControls.MODE_PENCIL ? Command.DRAW_CHARS : Command.ERASE_CHARS);
     }
     
     //=============================================================================================

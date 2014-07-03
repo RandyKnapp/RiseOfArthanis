@@ -4,9 +4,12 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 package roa.tool 
 {
+import com.sibirjak.asdpc.button.Button;
+import com.sibirjak.asdpc.button.ButtonEvent;
 import flash.display.Sprite;
 import flash.display.StageAlign;
 import flash.display.StageScaleMode;
+import roa.tool.command.CommandManager;
 import roa.tool.ui.BlockViewer;
 import roa.tool.ui.CharColorPicker;
 import roa.tool.ui.CharInfoControls;
@@ -52,7 +55,29 @@ public class ToolMain extends Sprite
         addChild(m_blockEditor);
         addChild(m_infoPanel);
         addChild(m_charInfoControls);
+        
+        // Test Buttons
+        var undo:Button = new Button();
+        undo.setSize(50, 20);
+        undo.label = "Undo";
+        undo.x = undo.y = 20;
+        addChild(undo);
+        
+        var redo:Button = new Button();
+        redo.setSize(50, 20);
+        redo.label = "Redo";
+        redo.x = 75;
+        redo.y = 20;
+        addChild(redo);
 
+        // Setup events
+        undo.addEventListener(ButtonEvent.CLICK, function (e:ButtonEvent):void {
+            CommandManager.undo();
+        });
+        redo.addEventListener(ButtonEvent.CLICK, function (e:ButtonEvent):void {
+            CommandManager.redo();
+        });
+        
         // Setup Signals
         m_blockEditor.onHoverChanged.add(m_infoPanel.setInfo);
     }

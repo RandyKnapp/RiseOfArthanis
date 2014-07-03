@@ -41,7 +41,7 @@ public class CharBlockData extends Sprite
         if (chars[x][y] == undefined)
             return null;
             
-        return (chars[x][y] as CharInfo).data;
+        return (chars[x][y] as CharInfo).data.clone();
     }
     
     //=============================================================================================
