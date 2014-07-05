@@ -4,14 +4,13 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 package roa.tool 
 {
-import com.sibirjak.asdpc.button.Button;
-import com.sibirjak.asdpc.button.ButtonEvent;
 import flash.display.Sprite;
 import flash.display.StageAlign;
 import flash.display.StageScaleMode;
-import roa.tool.command.CommandManager;
+import flash.events.KeyboardEvent;
+import roa.game.ui.CardDisplay;
+import roa.game.ui.HandDisplay;
 import roa.tool.ui.BlockViewer;
-import roa.tool.ui.CharColorPicker;
 import roa.tool.ui.CharInfoControls;
 import roa.tool.ui.InfoPanel;
 import starling.core.Starling;
@@ -37,7 +36,7 @@ public class ToolMain extends Sprite
         m_starling = new Starling(ToolGame, stage);
         m_starling.start();
         
-        var rightColumn:uint = 1280 - 84;
+        /*var rightColumn:uint = 1280 - 84;
         
         m_infoPanel = new InfoPanel();
         m_infoPanel.x = rightColumn;
@@ -79,7 +78,17 @@ public class ToolMain extends Sprite
         });
         
         // Setup Signals
-        m_blockEditor.onHoverChanged.add(m_infoPanel.setInfo);
+        m_blockEditor.onHoverChanged.add(m_infoPanel.setInfo);*/
+        
+        // Game test
+        var hand:HandDisplay = new HandDisplay();
+        hand.x = stage.stageWidth / 2;
+        hand.y = stage.stageHeight - 50;
+        addChild(hand);
+        
+        stage.addEventListener(KeyboardEvent.KEY_DOWN, function (e:KeyboardEvent):void {
+            hand.addCard(new CardDisplay());
+        })
     }
 
 }
